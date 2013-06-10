@@ -1,31 +1,45 @@
 PLT_APPS ?=
-DIALYZER_OPTS ?= -Werror_handling -Wrace_conditions \
--Wunmatched_returns # -Wunderspecs
 SRC ?= src
+EBIN ?= ebin deps/*/ebin
+DIALYZER_OPTS ?= \
+	-Werror_handling\
+	-Wunmatched_returns
+REBAR ?= ./rebar
+
+.PHONY: all compile deps demo-shell shell test rel relclean pltclean dialyze
 
 all: compile
 
-compile:
-	rebar compile
+compile: deps
+	$(REBAR) compile
 
-get-deps:
-	rebar get-deps
+deps:
+	$(REBAR) get-deps
 
-demo-shell:
-	erl -pa deps/*/ebin ebin -s $(PROJECT)
+demo-shell: compile
+	erl -pa $(EBIN) -s $(PROJECT)
 
-shell:
-	erl -pa deps/*/ebin ebin
+shell: compile
+	erl -pa $(EBIN)
 
 test:
-	rebar eunit
+	$(REBAR) eunit skip_deps=true
+
+rel: compile
+	$(REBAR) generate
+
+relclean:
+	rm -rf rel/$(PROJECT)
 
 # Dialyzer.
 
-build-plt:
+.$(PROJECT).plt:
 	@dialyzer --build_plt --output_plt .$(PROJECT).plt \
 	    --apps erts kernel stdlib $(PLT_APPS)
 
-dialyze:
+dialyze: .$(PROJECT).plt
 	@dialyzer --src $(SRC) \
-	    --plt .$(PROJECT).plt --no_native $(DIALYZER_OPTS)
+	    --plt .$(PROJECT).plt $(DIALYZER_OPTS)
+
+pltclean:
+	rm .$(PROJECT).plt
