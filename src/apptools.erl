@@ -1,3 +1,4 @@
+%%% -*- erlang -*-
 %%% @author Eric Moritz <eric@themoritzfamily.com>
 %%% @copyright (C) 2013, Eric Moritz
 %%% @doc
@@ -14,11 +15,12 @@
 %% Starts the app and its dependencies
 %% @end
 %%--------------------------------------------------------------------
--spec ensure_started(atom(), application:restart_type()) -> ok | {error, term()}.
+-type restart_type() :: permanent | transient | temporary.
+-spec ensure_started(atom(), restart_type()) -> ok | {error, term()}.
 ensure_started(App, Type) ->
     case application:start(App) of
 	{error, {not_started, Dep}} ->
-	    ensure_started(Dep, Type),
+	    ok = ensure_started(Dep, Type),
 	    ensure_started(App, Type);
 	{error, {already_started,_}} ->
 	    ok;
