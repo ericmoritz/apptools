@@ -4,18 +4,29 @@
 %%% @doc
 %%% Simple tools for OTP application
 %%% @end
-%%% Created : 27 Feb 2013 by Eric Moritz <eric@eric-acer>
+%%% Created : 27 Feb 2013 by Eric Moritz <eric@themoritzfamily.com>
 
 -module(apptools).
 
--export([ensure_started/2, priv_dir/1]).
+-export([ensure_started/1, ensure_started/2, priv_dir/1]).
+
+-type restart_type() :: permanent | transient | temporary.
 
 %%--------------------------------------------------------------------
 %% @doc
 %% Starts the app and its dependencies
 %% @end
 %%--------------------------------------------------------------------
--type restart_type() :: permanent | transient | temporary.
+-spec ensure_started(atom()) -> ok | {error, term()}.
+ensure_started(App) ->
+    ensure_started(App, permanent).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Starts the app and its dependencies
+%% @end
+%%--------------------------------------------------------------------
+
 -spec ensure_started(atom(), restart_type()) -> ok | {error, term()}.
 ensure_started(App, Type) ->
     case application:start(App) of
